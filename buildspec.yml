@@ -1,0 +1,27 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto8
+  build:
+    commands:
+      - echo Build started on `date`
+      - export BUCKET=java-lambda-function1234
+      - gradle build
+      - mv output/terraform-lambda-java-1.0-SNAPSHOT.jar .
+      - unzip terraform-lambda-java-1.0-SNAPSHOT.jar
+      - rm -rf output terraform src buildspec.yml build.gradle terraform-lambda-java-1.0-SNAPSHOT.jar
+      - aws cloudformation package --template-file template.yaml --s3-bucket $BUCKET --output-template-file outputtemplate.yaml
+  post_build:
+    commands:
+      - echo Build completed on `date` !!!
+artifacts:
+  files:
+    - output/terraform-lambda-java-1.0-SNAPSHOT.jar
+    - template.yaml
+    - outputtemplate.yaml
+  discard-paths: yes
+cache:
+  paths:
+  - '/root/.m2/**/*'
