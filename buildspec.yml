@@ -11,7 +11,7 @@ phases:
       java: corretto8
   pre_build:
     commands:
-      - yum update
+      - yum update -y
       - yum install -y jq
       - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.3.0.1492-linux.zip
       - unzip ./sonar-scanner-cli-3.3.0.1492-linux.zip
