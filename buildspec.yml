@@ -1,9 +1,28 @@
 version: 0.2
-
+env:
+  secrets-manager:
+    LOGIN: SonarCloud-CodePipeline-ASM-Secret:SONAR_TOEKN
+    HOST: SonarCloud-CodePipeline-ASM-Secret:HOST
+    Organization: SonarCloud-CodePipeline-ASM-Secret:ORGANIZATION
+    Project: SonarCloud-CodePipeline-ASM-Secret:PROJECT
 phases:
   install:
     runtime-versions:
       java: corretto8
+  pre_build:
+    commands:
+      - apt-get update
+      - apt-get install -y jq
+      - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.3.0.1492-linux.zip
+      - unzip ./sonar-scanner-cli-3.3.0.1492-linux.zip
+      - export PATH=$PATH:/sonar-scanner-3.3.0.1492-linux/bin/
+  build:
+    commands:
+      - gradle test
+      - gradle sonarqube -Dsonar.login=$LOGIN -Dsonar.host.url=$HOST -Dsonar.projectKey=$Project -Dsonar.organization=$Organization
+      - curl https://sonarcloud.io/api/qualitygates/project_status?projectKey=$Project > result.json
+      - cat result.json
+      - if [ $(jq -r '.projectStatus.status' result.json) = ERROR ] ; then $CODEBUILD_BUILD_SUCCEEDING -eq 0 ;fi
   build:
     commands:
       - echo Build started on `date`
@@ -21,6 +40,7 @@ artifacts:
     - output/terraform-lambda-java-1.0-SNAPSHOT.jar
     - template.yaml
     - outputtemplate.yaml
+    - result.json
   discard-paths: yes
 cache:
   paths:

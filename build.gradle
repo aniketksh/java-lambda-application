@@ -1,6 +1,10 @@
 plugins {
     id 'java'
+    id "org.sonarqube" version "3.1.1"
 }
+
+apply plugin: 'jacoco'
+apply plugin: 'org.sonarqube'
 
 group 'terraform-lambda-java'
 version '1.0-SNAPSHOT'
@@ -22,6 +26,13 @@ dependencies {
     compile 'com.amazonaws:aws-lambda-java-events:2.2.6'
     compile 'com.amazonaws:aws-lambda-java-log4j2:1.1.0'
     compile (name:'json-simple-1.1.1', ext:'jar')
+
+    classpath 'org.ajoberstar:gradle-jacoco:0.1.0'
+    classpath 'org.sonarqube.gradle:gradle-sonarqube-plugin:1.0'
+}
+
+test {
+  ignoreFailures = true
 }
 
 tasks.withType(Jar) {
